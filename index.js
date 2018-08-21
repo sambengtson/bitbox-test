@@ -1,10 +1,6 @@
 let BITBOXCli = require('bitbox-cli/lib/bitbox-cli').default;
 let BITBOX = new BITBOXCli({
-  protocol: "http",
-  host: "localhost",
-  port: "8332",
-  username: "",
-  password: ""
+  restURL: "https://trest.bitcoin.com/v1/"
 });
 
 
@@ -14,7 +10,7 @@ spend();
 
 function spend() {
 
-  const wif = 'KwNibZk3gRh7AZSHVc1GyEeuUBvypgpXY4vWBK34bgD6D5uSXktn';
+  const wif = 'cNgciJr2mLDL9hxX7z7TQRuV5TR5C8irJy6tJRyZZhwhJkt1PEmr';
   const ecPair = BITBOX.ECPair.fromWIF(wif);
   const address = BITBOX.ECPair.toLegacyAddress(ecPair);
 
@@ -103,7 +99,7 @@ function createAccount() {
   let rootSeed = BITBOX.Mnemonic.toSeed(mnemonic)
 
   // master HDNode
-  let masterHDNode = BITBOX.HDNode.fromSeed(rootSeed)
+  let masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, 'testnet')
 
   const wif = BITBOX.HDNode.toWIF(masterHDNode);
   const address = BITBOX.HDNode.toLegacyAddress(masterHDNode);
