@@ -56,7 +56,7 @@ function spend() {
       let sendAmount = originalAmount - byteCount;
 
       // add output w/ address and amount to send
-      transactionBuilder.addOutput(address, sendAmount);
+      transactionBuilder.addOutput('mgRoeWs2CeCEuqQmNfhJjnpX8YvtPACmCX', sendAmount);
 
       // sign w/ HDNode
       let redeemScript;
