@@ -3,7 +3,6 @@ let BITBOX = new BITBOXCli({
   restURL: "https://trest.bitcoin.com/v1/"
 });
 
-
 //createAccount();
 spend();
 
@@ -18,6 +17,11 @@ function spend() {
   if (!BITBOX.Address.isTestnetAddress(address)) {
     throw 'This is not a testnet address!!'
   }
+
+  const socket = new BITBOX.Socket()
+  socket.listen('transactions', (msg) => {
+    //console.log(msg);
+  })
 
   let balance = 0;
   BITBOX.Address.details(address)
@@ -45,18 +49,27 @@ function spend() {
       // add input with txid and index of vout
       transactionBuilder.addInput(txid, vout);
 
+      let buf = new Buffer('#BCHForEveryone');
+
+      let data = BITBOX.Script.encode([
+        BITBOX.Script.opcodes.OP_RETURN,
+        buf
+      ])
+      // add encoded data as output and send 0 satoshis
+      transactionBuilder.addOutput(data, 0)
+
       // get byte count to calculate fee. paying 1 sat/byte
       let byteCount = BITBOX.BitcoinCash.getByteCount({
-        P2PKH: 1
+        P2PKH: 2
       }, {
-          P2PKH: 1
-        });
+        P2PKH: 2
+      });
       // 192
       // amount to send to receiver. It's the original amount - 1 sat/byte for tx size
       let sendAmount = originalAmount - byteCount;
 
       // add output w/ address and amount to send
-      transactionBuilder.addOutput('mgRoeWs2CeCEuqQmNfhJjnpX8YvtPACmCX', sendAmount);
+      transactionBuilder.addOutput(address, sendAmount);
 
       // sign w/ HDNode
       let redeemScript;
@@ -68,7 +81,7 @@ function spend() {
       let hex = tx.toHex();
       console.log(`Transaction raw hex: ${hex}`);
 
-      return BITBOX.RawTransactions.sendRawTransaction(hex)
+     return BITBOX.RawTransactions.sendRawTransaction(hex)
     })
     .then(tx => {
       console.log(tx);
