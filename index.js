@@ -4,8 +4,28 @@ let BITBOX = new BITBOXCli({
 });
 
 //createAccount();
-spend();
+//spend();
+checkAccount();
 
+function checkAccount() {
+  const wif = 'cNgciJr2mLDL9hxX7z7TQRuV5TR5C8irJy6tJRyZZhwhJkt1PEmr';
+  const ecPair = BITBOX.ECPair.fromWIF(wif);
+  const address = BITBOX.ECPair.toCashAddress(ecPair);
+
+  BITBOX.Address.details([address])
+    .then(result => {
+      return BITBOX.Transaction.details(result[0].transactions[1])
+    })
+    .then(tx => {
+      const optData = tx.vout[0].scriptPubKey.asm;
+      let fromAsm = BITBOX.Script.fromASM(optData)
+      let decoded = BITBOX.Script.decode(fromAsm)
+      console.log(decoded[1].toString('ascii'));
+  })
+    .catch(err => {
+      console.log(err);
+    })
+}
 
 function spend() {
 
@@ -49,7 +69,7 @@ function spend() {
       // add input with txid and index of vout
       transactionBuilder.addInput(txid, vout);
 
-      let buf = new Buffer('#BCHForEveryone');
+      let buf = new Buffer('Test 123');
 
       let data = BITBOX.Script.encode([
         BITBOX.Script.opcodes.OP_RETURN,
@@ -62,8 +82,8 @@ function spend() {
       let byteCount = BITBOX.BitcoinCash.getByteCount({
         P2PKH: 2
       }, {
-        P2PKH: 2
-      });
+          P2PKH: 2
+        });
       // 192
       // amount to send to receiver. It's the original amount - 1 sat/byte for tx size
       let sendAmount = originalAmount - byteCount;
@@ -81,7 +101,7 @@ function spend() {
       let hex = tx.toHex();
       console.log(`Transaction raw hex: ${hex}`);
 
-     return BITBOX.RawTransactions.sendRawTransaction(hex)
+      return BITBOX.RawTransactions.sendRawTransaction(hex)
     })
     .then(tx => {
       console.log(tx);
