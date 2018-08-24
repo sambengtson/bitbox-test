@@ -3,9 +3,23 @@ let BITBOX = new BITBOXCli({
   restURL: "https://trest.bitcoin.com/v1/"
 });
 
-//createAccount();
+const socket = new BITBOX.Socket({
+  restURL: "https://trest.bitcoin.com"
+})
+socket.listen('transactions', (msg) => {
+  const trans = JSON.parse(msg);
+  for (const output of trans.outputs) {
+    for(const addr of output.scriptPubKey.addresses) {
+      if (addr === "mhdnbHsHgTRUYp1Jt6tZcWBb9PxwYt4eTC") {
+        console.log('Transaction detected...')
+      }
+    }
+  }
+})
+
+createAccount();
 //spend();
-checkAccount();
+//checkAccount();
 
 function checkAccount() {
   const wif = 'cNgciJr2mLDL9hxX7z7TQRuV5TR5C8irJy6tJRyZZhwhJkt1PEmr';
@@ -31,17 +45,12 @@ function spend() {
 
   const wif = 'cNgciJr2mLDL9hxX7z7TQRuV5TR5C8irJy6tJRyZZhwhJkt1PEmr';
   const ecPair = BITBOX.ECPair.fromWIF(wif);
-  const address = BITBOX.ECPair.toCashAddress(ecPair);
+  const address = BITBOX.ECPair.toLegacyAddress(ecPair);
 
   console.log(address);
   if (!BITBOX.Address.isTestnetAddress(address)) {
     throw 'This is not a testnet address!!'
   }
-
-  const socket = new BITBOX.Socket()
-  socket.listen('transactions', (msg) => {
-    //console.log(msg);
-  })
 
   let balance = 0;
   BITBOX.Address.details(address)
